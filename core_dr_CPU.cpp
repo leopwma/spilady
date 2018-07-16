@@ -32,12 +32,14 @@
 
 void core_dr_CPU(double dt){
 
+    double dt_over_atmass = dt/atmass;
+
     #pragma omp parallel for
     for (int i = 0; i < natom; ++i){
         struct atom_struct *atom_ptr;
         atom_ptr = first_atom_ptr + i;
-        atom_ptr->r = vec_add(atom_ptr->r, vec_times(dt/atmass, atom_ptr->p));
-         periodic(atom_ptr->r);
+        atom_ptr->r = vec_add(atom_ptr->r, vec_times(dt_over_atmass, atom_ptr->p));
+        periodic(atom_ptr->r);
     }
 }
 
