@@ -1,0 +1,361 @@
+/*******************************************************************************
+*
+*   Copyright (C) 2015 Culham Centre for Fusion Energy,
+*   United Kingdom Atomic Energy Authority, Oxfordshire OX14 3DB, UK
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+********************************************************************************
+*
+*   Program: SPILADY - A Spin-Lattice Dynamics Simulation Program
+*   Version: 1.0
+*   Date:    Aug 2015
+*   Author:  Pui-Wai (Leo) MA
+*   Contact: info@spilady.ccfe.ac.uk
+*   Address: Culham Centre for Fusion Energy, Oxfordshire OX14 3DB, United Kingdom
+*
+********************************************************************************
+*
+* List of files:
+* allocate_cells_CPU.cpp          -- allocates linked-cells into a group for parallel programming (CPU code)
+* allocate_cells_GPU.cu           -- allocates linked-cells into a group for parallel programming (GPU code)
+* bcc100.cpp                      -- builds the bcc structure, with box vectors x->[100], y->[010], z->[001]
+* bcc111.cpp                      -- builds the bcc structure, with box vectors x->[111], y->[-211], z->[0-11]
+* build_lattice.cpp               -- builds a lattice configuration
+* calculate_force_energy_CPU.cpp  -- calculates the force and energy of each atom (CPU code)
+* calculate_force_energy_GPU.cu   -- calculates the force and energy of each atom (GPU code)
+* calculate_rho_CPU.cpp           -- calculates the effective electron density on each atom (CPU code)
+* calculate_rho_GPU.cu            -- calculates the effective electron density on each atom (GPU code)
+* calculate_spin_CPU.cpp          -- performs the evolution of spins (CPU code)
+* calculate_spin_GPU.cu           -- performs the evolution of spins (GPU code)
+* calculate_temperature_CPU.cpp   -- calculates temperature of each subsystems (CPU code)
+* calculate_temperature_GPU.cu    -- calculates temperature of each subsystems (GPU code)
+* check.cpp                       -- contains a function grouping all check_xxx functions
+* check_energy_CPU.cpp            -- calculates instantaneous values of energies (CPU code)
+* check_energy_GPU.cu             -- calculates instantaneous values of energies (GPU code)
+* check_pressure_CPU.cpp          -- calculates the instantaneous value of pressure (CPU code)
+* check_pressure_GPU.cu           -- calculates the instantaneous value of pressure (GPU code)
+* check_spin_CPU.cpp              -- calculates the average mangetic moment or spin and the average effective field (CPU code)
+* check_spin_GPU.cu               -- calculates the average mangetic moment or spin and the average effective field (GPU code)
+* check_stress_CPU.cpp            -- calculates instantaneous values of stresses (CPU code)
+* check_stress_GPU.cu             -- calculates instantaneous values of stresses (GPU code)
+* check_temperature_CPU.cpp       -- calculates instantaneous values of temperatures (CPU code)
+* check_temperature_GPU.cu        -- calculates instantaneous values of temperatures (GPU code)
+* control.h                       -- control file for switching on/off options
+* copy_CPU_btw_GPU.cu             -- copies variables, atomic information, linked-cells information from CPU to GPU
+* core.cpp                        -- contains a function to arrange other core_xxx functions according to the Suzuki-Trotter decomposition for time integration
+* core_dp_CPU.cpp                 -- calculates the change of momenta over a time step (CPU code)
+* core_dp_GPU.cu                  -- calculates the change of momenta over a time step (GPU code)
+* core_dr_CPU.cpp                 -- calculates the change of positions over a time step (CPU code)
+* core_dr_GPU.cu                  -- calculates the change of positions over a time step (GPU code)
+* core_ds_CPU.cpp                 -- calculates the change of spin or magnetic moment vectors over a time step (CPU code)
+* core_ds_GPU.cu                  -- calculates the change of spin or magnetic moment vectors over a time step (GPU code)
+* core_dTe_CPU.cpp                -- calculates the change of local electron temperature over a time step (CPU code)
+* core_dTe_GPU.cu                 -- calculates the change of local electron temperature over a time step (GPU code)
+* default.h                       -- contains and declares input variables
+* external_field_CPU.cpp          -- contains a function to read in the external fields file (CPU code)
+* external_field_GPU.cu           -- contains a function to read in the external fields file (GPU code)
+* external_force_CPU.cpp          -- contains a function to read in the external forces file (CPU code)
+* external_force_GPU.cu           -- contains a function to read in the external forces file (GPU code)
+* fcc100.cpp                      -- builds fcc structure, with the box vectors x->[100], y->[010], z->[001]
+* find_image_CPU.cpp              -- finds the nearest image of neighbouring atoms for force calculations (CPU)
+* find_image_GPU.cu               -- finds the nearest image of neighbouring atoms for force calculations (GPU)
+* free_memory.cpp                 -- frees memory associated with all the pointers at the end of a run
+* global.h                        -- contains and declares some of the global variables
+* hcp0001.cpp                     -- builds the hcp structure, with the box vectors x->[-12-10], y->[-1010] and z->[0001]
+* heatcapacity_CPU.cpp            -- contain functions for calculating the relationship between the heat capacity and energy of electrons (CPU code)
+* heatcapacity_GPU.cu             -- contain functions for calculating the relationship between the heat capacity and energy of electrons (GPU code)
+* initial.cpp                     -- contains a function grouping all the initial_xxx functions
+* initial_element.cpp             -- initializes variable "element" for every atoms
+* initial_GPU.cu                  -- initializes the GPU device, copies variables and atomic information, and copies potential tables
+* initial_momentum.cpp            -- initializes momenta of every atoms
+* initial_spin.cpp                -- initializes spins and magnetic moment vectors of every atoms
+* LICENSE                         -- contains the Apache license, version 2.0
+* links_CPU.cpp                   -- contains functions that initialize the linked-cell structure and calculate which linked-cell an atom belongs to after each time step (CPU code)
+* links_GPU.cu                    -- contains functions that initialize the linked-cell structure and calculate which linked-cell an atom belongs to after each time step (GPU code)
+* make.sh                         -- a script file to compile the program
+* map_cells.cpp                   -- maps the neigbours of linked-cells and reads in electron temperature file
+* NOTICE                          -- Information for users
+* periodic_CPU.cpp                -- applies periodic boundary conditions (CPU code)
+* periodic_GPU.cu                 -- applies periodic boundary conditions (GPU code)
+* potential_CPU.cpp               -- calculates potential tables (CPU code)
+* potential_GPU.cu                -- copies potential tables from CPU to GPU (GPU code)
+* prototype_CPU.h                 -- contains prototypes of functions called by CPU
+* prototype_GPU.h                 -- contains prototypes of functions called by GPU
+* quantum_noise_CPU.cpp           -- uses quantum thermostat instead of classical Langevin thermostat (CPU code)
+* quantum_noise_GPU.cu            -- uses quantum thermostat instead of classical Langevin thermostat (GPU code)
+* random_number_CPU.cpp           -- generates random numbers for multi-threads runs (CPU code)
+* random_number_GPU.cu            -- generates random numbers for GPU massively parallel environment (GPU code)
+* read_config.cpp                 -- reads in the configuration file in SPILADY format for atoms/spins information
+* read_variables.cpp              -- reads in input variables
+* read_vsim.cpp                   -- reads in V_sim compatible files containing information about atoms/spins
+* scale.cpp                       -- contains a function grouping all the scale_xxx functions
+* scale_pressure_CPU.cpp          -- scales the box size according to internal pressure (CPU code)
+* scale_pressure_GPU.cu           -- scales the box size according to internal pressure (GPU code)
+* scale_step_CPU.cpp              -- scales the time step according to the maximum displacement of atoms and/or precession of spins (CPU code)
+* scale_step_GPU.cu               -- scales the time step according to the maximum displacement of atoms and/or precession of spins (GPU code)
+* scale_stress_CPU.cpp            -- scales the box size and shape according to internal stresses (CPU code)
+* scale_stress_GPU.cu             -- scales the box size and shape according to internal stresses (GPU code)
+* scale_temperature.cpp           -- scales the lattice temperature to an assigned value (only at initialization)
+* spilady.cpp                     -- main body of the program
+* spilady.h                       -- contains all the necessary headers
+* struct.h                        -- contains "struct" for vector, box_vector, atoms and linked-cell etc
+* variables.in                    -- input file for variables
+* vec_utils_CPU.cpp               -- contains utility functions for "vector" (CPU code)
+* vec_utils_GPU.cu                -- contains utility functions for "vector" (GPU code)
+* write_config.cpp                -- writes configuration file in SPILADY format for atoms/spins
+* write.cpp                       -- contains a function grouping all the write_xxx functions
+* write_vsim.cpp                  -- writes V_sim compatible files for atoms/spins
+*
+* potential:
+*   DD05.cpp                      -- Dudarev-Derlet 2005 iron potential
+*   Gordon11_Fe.cpp               -- Gordon 2011 iron potential
+*   JijFe.cpp                     -- Exchange coupling function and Landau coefficients for iron
+*   MCM2011_Fe.cpp                -- Marinica 2011 iron potential
+*   MCM_EAM4_W.cpp                -- Marinica 2013 tungsten potential (EAM4)
+*
+*
+* example1:
+*   control.h                     -- control file for switching on/off options
+*   extfield.in                   -- input file for external magnetic field
+*   Jij0.cpp*                     -- the exchange coupling function, where Jij = 0, i.e. non-interacting spin
+*   make.sh                       -- a script file to compile the program
+*   variables.in                  -- input file for variables
+*   vsim-example1.ascii           -- V_sim compatible file for atomic positions as input file
+*   vsim-example1.spin            -- V_sim compatible file for spin vectors as input file
+*   movie:
+*     1_mag_mom_extfield.mp4      -- a movie referring to example 1
+*
+* example2:
+*   control.h                     -- control file for switching on/off options
+*   JijFe_fix_lattice.cpp         -- the exchange coupling function for fixed lattice iron calculations
+*   make.sh                       -- a script file to compile the program
+*   variables.in                  -- input file for variables
+*   vsim-2000spins.ascii          -- V_sim compatible file for atomic positions as input file
+*   vsim-2000spins.spin           -- V_sim compatible file for spin vectors as input file
+*   movie:
+*     2000_interact_spins.mp4     -- a movie referring to example 2
+*
+* example3:
+*   control.h                     -- control file for switching on/off options
+*   JijFe.cpp                     -- the exchange coupling function and Landau coefficients for iron
+*   make.sh                       -- a script file to compile the program
+*   variables.in                  -- input file for variables
+*
+* example4:
+*   control.h                     -- control file for switching on/off options
+*   DD05.cpp                      -- Dudarev-Derlet 2005 iron potential
+*   make.sh                       -- a script file to compile the program
+*   variables.in                  -- input file for variables
+*
+* example5:
+*   control.h                     -- control file for switching on/off options
+*   DD05.cpp                      -- Dudarev-Derlet 2005 iron potential
+*   JijFe.cpp                     -- Exchange coupling function and Landau coefficients for iron
+*   make.sh                       -- a script file to compile the program
+*   variables.in                  -- input file for variables
+*   output_data:
+*     con-test_SLDHL_0000.dat     -- output file in SPILADY format for the initial configuration of atoms/spins
+*     con-test_SLDHL_9999.dat     -- output file in SPILADY format for the final configuration of atoms/spins
+*     enr-test_SLDHL.dat          -- output file of average energies as a function of time
+*     plot_lattice_constant       -- a script file for gnuplot to plot "thermalize_300K_lattice_constant.eps"
+*     plot_pressure               -- a script file for gnuplot to plot "thermalize_300K_pressure.eps"
+*     plot_temperature            -- a script file for gnuplot to plot "thermalize_300K_temperature.eps"
+*     prs-test_SLDHL.dat          -- output file of average pressure as a function of time
+*     spn-test_SLDHL.dat          -- output file of average spin/magnetic moment as a function of time
+*     str-test_SLDHL.dat          -- output file of average stresses as a function of time
+*     thermalize_300K_lattice_constant.eps  -- figure of lattice constant plotted as a function of time
+*     thermalize_300K_pressure.eps          -- figure of pressure plotted as a function of time
+*     thermalize_300K_temperature.eps       -- figure of temperature plotted as a function of time
+*     tmp-test_SLDHL.dat          -- output file of average temperatures as a function of time
+*     vsm-test_SLDHL_0000.ascii   -- output V_sim compatible file for the initial atomic positions and momenta
+*     vsm-test_SLDHL_0000.dat     -- output V_sim compatible file for coloring
+*     vsm-test_SLDHL_0000.spin    -- output V_sim compatible file for the initial spin vectors
+*     vsm-test_SLDHL_9999.ascii   -- output V_sim compatible file for the final atomic positions and momenta
+*     vsm-test_SLDHL_9999.dat     -- output V_sim compatible file for coloring
+*     vsm-test_SLDHL_9999.spin    -- output V_sim compatible file for the final spin vectors
+*
+* example6:
+*   con-chain-input.in        -- input configuration file in SPILADY format
+*   control.h                 -- control file for switching on/off options
+*   DD05.cpp                  -- Dudarev-Derlet 2005 iron potential
+*   JijFe.cpp                 -- the Exchange coupling function and Landau coefficients for iron
+*   make.sh                   -- a script file to compile the program
+*   variables.in              -- input file for variables
+*
+* example7:
+*   con-test_SLDHL_9999.dat   -- input configuration file in SPILADY format
+*   control.h                 -- control file for switching on/off options
+*   DD05.cpp                  -- Dudarev-Derlet 2005 iron potential
+*   JijFe.cpp                 -- the exchange coupling function and Landau coefficients for iron
+*   laser_demagnetization_CPU.cpp           -- contains a function mimicking laser pulse heating
+*   make.sh                   -- a script file to compile the program
+*   prototype_CPU.h           -- contains prototypes of functions called by CPU (edited for extra function)
+*   spilady.cpp               -- main body of the program (edited for extra function)
+*   variables.in              -- input file for variables
+*
+* example8:
+*   cal_momentum.f            -- an analysis program required for example 8 only (in Fortran 77 format)
+*   compressive_wave_GPU.cu   -- contains a function to introduce a soft piston at both sides of the simulation box
+*   con-SLDHL300K_30-30-550.in              -- input configuration file in SPILADY format
+*   control.h                 -- control file for switching on/off options
+*   DD05.cpp                  -- Dudarev-Derlet 2005 iron potential
+*   JijFe.cpp                 -- Exchange coupling function and Landau coefficients for iron
+*   make.sh                   -- a script file to compile the program
+*   prototype_CPU.h           -- contains prototypes of functions called by CPU (edited for extra function)
+*   spilady.cpp               -- main body of the program (edited for extra function)
+*   variables.in              -- input file for variables
+*
+********************************************************************************
+* 1. Files
+*
+* Please first download the program as a compressed file spilady1.0.tar.gz.
+* Decompress it using one of the standard commands, for example
+*
+* $ tar -zxvf spilady1.0.tar.gz
+*
+* All the files and working examples should decompress into a folder spilady1.0.
+* It is advisable to work from within the folder by typing
+*
+* $ cd spilady1.0
+*
+* In order to run the program, one needs several files.
+* They are make.sh, control.h and variables.in. To perform an
+* MD or an SLD simulation, i.e. simulations involving atomic coordinates, a
+* file defining an interatomic potential is also required, for example DD05.cpp.
+* To perform a spin dynamics (SD) simulation on a rigid lattice
+* or a spin-lattice dynamics (SLD) simulation, a Heisenberg-Landau function
+* file JijFe.cpp is also needed. To use Langevin electron
+* thermostat, the electron heat capacity file heatcapacity_CPU.cpp or/and
+* heatcapacity_GPU.cu is also required.
+*
+* 2. Compiling and running the program
+* First, the program needs to be compiled. In principle, SPILADY can be
+* compiled using only a single command line. To simplify it further, a script
+* file is provided. The file that contains all the commands needed to compile
+* the program is called make.sh. Now we need to convert it into an executable
+* file. In a Unix or Linux environment, this can be achieved by typing the
+* following command (which changes the file from a text file into an executable file):
+*
+* $ chmod +x make.sh
+*
+* One may need to alter the content of the script file depending on local
+* computer settings. If one uses CPUs, it is mandatory to use an OpenMP capable
+* compiler. One can use, for example, g++ or icc to compile the program. For
+* Nvidia GPU, the default compiler is nvcc. Also, one needs to use appropriate
+* options to compile all the files in the current folder, for example
+*
+* $ g++ -fopenmp -o spilady -DCPU -DOMP -DMD *.cpp
+*
+* Option -fopenmp allows the compiler to recognize OpenMP directives in the
+* code. If one chooses the icc compiler, the corresponding option is -openmp.
+* Option "-o spilady" gives the resulting executable file a name spilady. Option
+* -DCPU defines the word CPU in the computer code, similarly -DOMP and
+* -DMD define words OMP and MD. Option -DXXX has the same effect as
+* adding directive #define XXX to the content of all the files.
+*
+***********************************************************
+* Table 1: Compilation options                            *
+***********************************************************
+* Option  | Type of calculation | Hamiltonian             *
+* -DMD    | MD                  | EAM                     *
+* -DSDH   | SD                  | Heisenberg              *
+* -DSDHL  | SD                  | Heisenberg-Landau       *
+* -DSLDH  | SLD                 | EAM + Heisenberg        *
+* -DSLDHL | SLD                 | EAM + Heisenberg-Landau *
+* -DSLDNC | SLD                 | Noncollinear Many-body  *
+***********************************************************
+*
+* Depending on whether one intends to run an MD, or an SD, or an SLD
+* simulation, the last option in the compilation command should be either
+* -DMD (for molecular dynamics), or -DSDH for spin dynamics in the Heisenberg
+* Hamiltonian approximation, and so on, as described in table 1
+* above. The table gives all the already available compilation options, apart
+* from -DSLDNC option that is still under development.
+*
+* If the program is compiled with the intention of using a Nvidia GPU, the
+* compilation procedure is broadly similar. We advise to use a CUDA version
+* later than 5.5, for which the program has been tested. To compile the
+* program, execute the command
+*
+* $ nvcc -arch=sm_35 -rdc=true -o spilady -DGPU -DMD *.cpp *.cu
+*
+* In the above example, option -arch=sm_35 instructs the compiler to produce
+* an executable file for devices with hardware architecture of version
+* 3.5. The program has been successfully tested with option -arch=sm_20,
+* i.e. version 2.0, too. There is no guarantee that compilation for hardware
+* version earlier than 2.0 is going to be successful. If one intends to compile
+* the program for multiple hardware architectures, please refer to the CUDA
+* program manual.
+*
+* Option -rdc=true is important, where -rdc is the short form of --relocatable-
+* device-code. It allows device codes to be placed in different files to be
+* recognized by other codes in other files. Although this is a default feature
+* of CPU compilers, this option must be used for the GPU compiler nvcc. Other
+* compilation options are similar to those used for CPU compilations.
+* We would like to draw attention to the fact that all the files in the current
+* folder are going to be compiled. If there are files that are not required for a
+* given round of compilation, it is best to move them elsewhere out of the current
+* folder before executing the compilation command. In particular, this has
+* implications for the choice of interatomic potential. Only one single file
+* describing a potential, say DD05.cpp, can be retained in the folder during
+* compilation, and it is this specific potential, described in the potential file,
+* that is going to be used by the compiled SPILADY program for carrying
+* out simulations.
+*
+* SPILADY can be executed by typing
+*
+* $ ./spilady
+*
+* Running the program requires no extra argument.
+
+********************************************************************************
+
+* Testing:
+* We recommand users to test the compiled code using example 5.
+*
+* 1)  Decomprise the file spilady1.0.tar.gz as mentioned above.
+*
+* 2)  Enter the working directory e.g. spilady1.0
+*
+* 3)  copy all files from folder "example5" into the working directory,
+*     except for the files in the sub-folder "output_data".
+*
+* 4)  Type ./make.sh in the working directory, assuming that a g++ compiler is available.
+*
+* 5)  Edit "variables.in" if necessary. Indicate the number of threads by changing
+*     the value of variable "OMP_threads".
+*
+* 6)  Run the program by typing ./spilady
+*
+* 7)  It takes time to run. We tested it using 12 CPU cores. The running time was 
+*     about 50 mins.
+*
+* 8)  One can see a plot of the lattice constant as a function of time in
+*     folder "example5/output_data/" with file name
+*     "thermalize_300K_lattice_constant.eps". Similarly,  pressure and
+*     temperature are also plotted in files
+*     "thermalize_300K_pressure.eps" and ""thermalize_300K_temperature.eps".
+*
+* 9)  If you use GNUPLOT, you can simply type:
+*
+*     gnuplot> load "example5/output_data/plot_lattice_constant"
+*
+*     You should see a graph similar to the one given in
+*     "thermalize_300K_lattice_constant.eps". Similarly, one can also load
+*     "plot_pressure" and "plot_temperature" for the other 2 figures.
+*
+* 10) If the curves are the same as given in the example figures, apart from
+*     small fluctuations, the program runs correctly.
+*
+*******************************************************************************/

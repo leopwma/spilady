@@ -1,0 +1,16 @@
+#!/bin/sh
+# @ input = /dev/null
+# @ error = run_spilady.err
+# @ output = run_spilady.out
+# @ initialdir = /home/leoma/spilady1.0.1/
+# @ notify_user = leoma
+# @ notification = complete
+# @ queue
+# @ jobtype = openmp
+# @ node = 1
+# @ max_processors = 20
+# @ min_processors = 20
+
+source /usr/local/depot/EVALINTEL/intel/parallel_studio_xe_2016.2.062/psxevars.sh
+
+./spilady

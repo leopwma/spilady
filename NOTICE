@@ -1,0 +1,99 @@
+/*******************************************************************************
+*
+*   Copyright (C) 2015 Culham Centre for Fusion Energy,
+*   United Kingdom Atomic Energy Authority, Oxfordshire OX14 3DB, UK
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+********************************************************************************
+*
+*   Program: SPILADY - A Spin-Lattice Dynamics Simulation Program
+*   Version: 1.0
+*   Date:    Aug 2015
+*   Author:  Pui-Wai (Leo) MA
+*   Contact: info@spilady.ccfe.ac.uk
+*   Address: Culham Centre for Fusion Energy, Oxfordshire OX14 3DB, United Kingdom
+*
+********************************************************************************
+*
+*   Parallelized for CPU or GPU.
+*   Written in OpenMP C/C++ and CUDA C/C++ 
+*   If running on CPUs, please use an OpenMP capable compiler.
+*   If running on GPUs, please use a CUDA compiler version 5.5 or later.
+*   Only a sinlge Nvidia GPU card (hardware verion >= 2.0) is used.
+*   Please see README for a full list of files and instructions regarding how to compile the program.
+*
+********************************************************************************
+*
+* In publications produced using SPILADY, where appropriate, please refer to the following papers:
+*
+* 1) Spin-lattice dynamics:
+     Spin-Lattice Dynamics Simulations of Ferromagnetic Iron, Pui-Wai Ma, C. H. Woo and S. L. Dudarev, AIP Conf. Proc. vol. 999, 134 (2008)
+*    Large-scale simulation of the spin-lattice dynamics in ferromagnetic ion, Pui-Wai Ma, C. H. Dudarev, and S. L. Dudarev, Phys. Rev. B78, 024434 (2008)
+*
+* 2) Spin-lattice-electron dynamics, or molecular-electron dynamics:
+*    Spin-lattice dynamics model for magnon-phonon-electron heat tranfer on a million atom scale, Pui-Wai Ma, S. L. Dudarev, and C. H. Woo, J. Appl. Phys. 111, 07D114 (2012).
+*    Spin-lattice electron dynamics simulations of magnetic materials, Phys. Rev. B85, 184301 (2012)
+*
+* 3) Local collective motion:
+*    Spin-lattice electron dynamics simulations of magnetic materials, Phys. Rev. B85, 184301 (2012)
+*
+* 4) Langevin spin dynamics:
+*    Langevin spin dynamics, Pui-Wai Ma, and S. L. Dudarev, Phys. Rev. B83, 134418 (2011)
+*
+* 5) Longitudinal magnetic fluctuation:
+*    Longitudinal magnetic fluctuations in Langevin spin dynamics, Pui-Wai Ma, and S. L. Dudarev, Phys. Rev B86, 054416 (2012)
+*
+* 6) Spin temperature:
+*    Temperature for a dynamic spin ensemble, Pui-Wai Ma, S. L. Dudarev, S. L. Semenov, and C. H. Woo, Phys. Rev. E82, 031111 (2010)
+*
+* 7) Parallel algorithm:
+*    Parallel algorithm for spin and spin-lattice dynamics simulations, Pui-Wai Ma, and C. H. Woo, Phys. Rev. E79, 046703 (2009)
+*
+* 8) Program code (SPILADY):
+*    SPILADY - A Spin-Lattice Dynamics Program, Pui-Wai Ma, and S. L. Dudarev (in preparation)
+*
+********************************************************************************
+*
+* Units:
+*            Internal units:    Output units: 
+*   Energy:	eV                 eV
+*   Force:      eV/A               eV/A
+*   Length:	Angstrom           Angstrom
+*   Time:	second             second
+*   Stress:	eV/A^3             GPa (in pressure and stress output)
+*   Mag. Mom.:	muB                muB (One can choose magnetic moments or atomic spins as input / output variables)
+*   Spin:       dimensionless      dimensionless (Atomic spin is always used in actual calculations.)
+*
+********************************************************************************
+*
+* Notes for GPU:
+*   Pointers with tail "_ptr_d" point to the GPU memory.
+*   Functions with tail "_GPU" run on device but call from the host.
+*   Functions with tail "_d" run on device and call from the device,
+*   with the exception of variable "Inv_d", which is the inverse of the box vector "d".
+*
+********************************************************************************
+*
+* Edit Notes:
+* Date: Oct 2015
+* Author: Pui-Wai (Leo) Ma
+* Bug fixed: 
+* 1) quantum_noise_CPU.cpp
+* 2) quantum_noise_GPU.cu
+*
+* Adjustment without changing any property:
+* 1) potential_CPU.cpp
+* 2) potential_GPU.cu
+*
+********************************************************************************/
