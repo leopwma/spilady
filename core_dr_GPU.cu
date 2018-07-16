@@ -33,11 +33,13 @@
 
 __global__ void LP1dr(struct varGPU *var_ptr_d, struct atom_struct *first_atom_ptr_d, double dt){
 
+    double dt_over_atmass = dt/var_ptr_d->atmass;
+
     int i = blockIdx.x*blockDim.x + threadIdx.x;
     if (i < var_ptr_d->natom){
         struct atom_struct *atom_ptr;
         atom_ptr = first_atom_ptr_d + i;
-        atom_ptr->r = vec_add_d(atom_ptr->r, vec_times_d(dt/var_ptr_d->atmass, atom_ptr->p));
+        atom_ptr->r = vec_add_d(atom_ptr->r, vec_times_d(dt_over_atmass, atom_ptr->p));
         periodic_d(atom_ptr->r,  var_ptr_d);
     }
 }
