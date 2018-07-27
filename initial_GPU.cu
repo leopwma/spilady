@@ -37,14 +37,12 @@ void initial_GPU(){
 
     cudaSetDevice(current_device); //To set which GPU card is going to use.
 
-    no_of_blocks = (natom + no_of_threads - 1)/no_of_threads; //set the total no. of blocks in a grid
-
     cudaDeviceProp deviceProp;
     cudaGetDeviceProperties(&deviceProp, current_device);
-    no_of_MP = deviceProp.multiProcessorCount; //no. of multi Processor
 
-    no_of_threads = initial_no_of_threads(deviceProp);
-    //assign the no. of threads automatically according to the architecture of GPU card
+    no_of_MP = deviceProp.multiProcessorCount; //no. of multi Processor
+    no_of_threads = initial_no_of_threads(deviceProp); //assign the no. of threads automatically according to the architecture of GPU card
+    no_of_blocks = (natom + no_of_threads - 1)/no_of_threads; //set the total no. of blocks in a grid
 
     cout << "Nvidia GPU card is running." << '\n';
     cout << "Device name                  = " << deviceProp.name << '\n';
