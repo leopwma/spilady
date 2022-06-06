@@ -57,9 +57,9 @@ void hcp0001bulk(){
     dist.z=c_lattice;
 
     // assign positions of atoms in basic cell      
-    first_atom_ptr->x0 = 0e0;
-    first_atom_ptr->y0 = 0e0;
-    first_atom_ptr->z0 = 0e0;
+    first_atom_ptr->r.x = 0e0;
+    first_atom_ptr->r.y = 0e0;
+    first_atom_ptr->r.z = 0e0;
     (first_atom_ptr+1)->r.x = a_lattice/2e0;
     (first_atom_ptr+1)->r.y = a_lattice/2e0*tan(30e0/180e0*Pi_num);
     (first_atom_ptr+1)->r.z = c_lattice/2e0;
